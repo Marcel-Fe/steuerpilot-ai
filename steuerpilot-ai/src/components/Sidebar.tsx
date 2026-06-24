@@ -12,9 +12,11 @@ import {
   Mail,
   Settings,
   Sparkles,
+  Lock,
   ChevronDown,
 } from 'lucide-react';
 import { useApp } from '../state/AppContext';
+import { useAuth } from '../state/AuthContext';
 
 const NAV = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -33,6 +35,7 @@ const NAV = [
 // Inhalt der Seitenleiste — geteilt von Desktop-Sidebar und mobilem Drawer.
 export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { state } = useApp();
+  const { hasPin, lock } = useAuth();
 
   return (
     <div className="flex h-full flex-col gap-6">
@@ -88,7 +91,13 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             <p className="truncate text-[0.85rem] font-semibold text-ink">{state.profile.name}</p>
             <p className="text-[0.72rem] text-ink-soft">{state.profile.role}</p>
           </div>
-          <ChevronDown className="h-4 w-4 text-ink-soft" />
+          {hasPin ? (
+            <button onClick={lock} className="grid h-7 w-7 place-items-center rounded-lg text-ink-soft hover:bg-brand-50 hover:text-brand" aria-label="App sperren">
+              <Lock className="h-4 w-4" />
+            </button>
+          ) : (
+            <ChevronDown className="h-4 w-4 text-ink-soft" />
+          )}
         </div>
       </div>
     </div>

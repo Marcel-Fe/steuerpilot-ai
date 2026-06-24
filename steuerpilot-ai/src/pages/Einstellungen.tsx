@@ -1,15 +1,28 @@
 import { useState } from 'react';
-import { Download, Upload, RotateCcw, Save } from 'lucide-react';
+import { Download, Upload, RotateCcw, Save, Lock, LogOut } from 'lucide-react';
 import { Card } from '../components/Card';
 import { useApp } from '../state/AppContext';
+import { useAuth } from '../state/AuthContext';
 import type { AppState } from '../types';
 
 export function Einstellungen() {
   const { state, updateProfile, replaceState, reset } = useApp();
+  const { hasPin, setPin, removePin, signOut } = useAuth();
   const [name, setName] = useState(state.profile.name);
   const [role, setRole] = useState(state.profile.role);
   const [taxYear, setTaxYear] = useState(String(state.profile.taxYear));
   const [note, setNote] = useState('');
+  const [newPin, setNewPin] = useState('');
+
+  const savePin = async () => {
+    if (!/^\d{4,8}$/.test(newPin)) {
+      setNote('Die PIN muss 4–8 Ziffern haben.');
+      return;
+    }
+    await setPin(newPin);
+    setNewPin('');
+    setNote(hasPin ? 'PIN geändert ✓' : 'PIN gesetzt ✓');
+  };
 
   const saveProfile = () => {
     updateProfile({ name: name.trim() || 'Nutzer', role: role.trim(), taxYear: parseInt(taxYear, 10) || state.profile.taxYear });
@@ -91,6 +104,44 @@ export function Einstellungen() {
             />
           </label>
         </div>
+      </Card>
+
+      <Card className="p-6">
+        <h2 className="flex items-center gap-2 text-base font-bold text-ink">
+          <Lock className="h-5 w-5 text-brand" /> Konto & PIN
+        </h2>
+        <p className="mt-1 text-[0.84rem] text-ink-soft">
+          {hasPin ? 'Deine App ist mit einer PIN geschützt.' : 'Schütze die App mit einer PIN (4–8 Ziffern).'}
+        </p>
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+          <input
+            type="password"
+            inputMode="numeric"
+            value={newPin}
+            onChange={(e) => setNewPin(e.target.value)}
+            placeholder={hasPin ? 'Neue PIN' : 'PIN festlegen'}
+            className="flex-1 rounded-xl border border-line bg-bg/40 px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-surface"
+          />
+          <button onClick={savePin} className="flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white">
+            <Lock className="h-4 w-4" /> {hasPin ? 'PIN ändern' : 'PIN setzen'}
+          </button>
+          {hasPin && (
+            <button
+              onClick={() => { removePin(); setNote('PIN entfernt.'); }}
+              className="rounded-xl border border-line px-4 py-2.5 text-sm font-semibold text-ink-soft hover:bg-brand-50"
+            >
+              PIN entfernen
+            </button>
+          )}
+        </div>
+        <button
+          onClick={() => {
+            if (confirm('Abmelden und Profil neu einrichten? Deine Daten bleiben auf dem Gerät erhalten.')) signOut();
+          }}
+          className="mt-4 flex items-center gap-2 text-sm font-semibold text-ink-soft hover:text-ink"
+        >
+          <LogOut className="h-4 w-4" /> Abmelden / Profil neu einrichten
+        </button>
       </Card>
 
       <Card className="p-6">

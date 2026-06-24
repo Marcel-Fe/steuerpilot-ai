@@ -1,6 +1,7 @@
-import { Search, Bell, ScanLine, Menu } from 'lucide-react';
+import { Search, ScanLine, Menu } from 'lucide-react';
 import { useApp } from '../state/AppContext';
 import { useUi } from '../state/UiContext';
+import { NotificationsBell } from './NotificationsBell';
 
 function greeting(): string {
   const h = new Date().getHours();
@@ -43,13 +44,7 @@ export function Header() {
           />
         </div>
 
-        <button
-          className="relative grid h-11 w-11 place-items-center rounded-xl bg-surface shadow-[var(--shadow-card)]"
-          aria-label="Benachrichtigungen"
-        >
-          <Bell className="h-5 w-5 text-ink-soft" />
-          <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-danger" />
-        </button>
+        <NotificationsBell />
 
         <button
           onClick={openReceiptModal}

@@ -1,5 +1,6 @@
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { AppProvider } from './state/AppContext';
+import { AuthProvider } from './state/AuthContext';
 import { Layout } from './components/Layout';
 import { Dashboard } from './pages/Dashboard';
 import { Assistent } from './pages/Assistent';
@@ -16,6 +17,7 @@ import { ComingSoon } from './pages/ComingSoon';
 export default function App() {
   return (
     <AppProvider>
+      <AuthProvider>
       <HashRouter>
         <Routes>
           <Route element={<Layout />}>
@@ -34,6 +36,7 @@ export default function App() {
           </Route>
         </Routes>
       </HashRouter>
+      </AuthProvider>
     </AppProvider>
   );
 }
