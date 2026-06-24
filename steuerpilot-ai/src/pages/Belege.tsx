@@ -1,13 +1,17 @@
-import { ReceiptText, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { ReceiptText, Plus, Pencil, Trash2 } from 'lucide-react';
 import { Card } from '../components/Card';
+import { ReceiptModal } from '../components/ReceiptModal';
 import { useApp } from '../state/AppContext';
 import { useUi } from '../state/UiContext';
 import { CATEGORY_LABELS, CATEGORY_COLORS } from '../types';
+import type { Receipt } from '../types';
 import { formatEuro } from '../lib/calculations';
 
 export function Belege() {
-  const { state } = useApp();
+  const { state, deleteReceipt } = useApp();
   const { openReceiptModal } = useUi();
+  const [editing, setEditing] = useState<Receipt | null>(null);
   const receipts = [...state.receipts].sort((a, b) => b.date.localeCompare(a.date));
 
   return (
@@ -26,7 +30,7 @@ export function Belege() {
 
       <Card className="divide-y divide-line">
         {receipts.map((r) => (
-          <div key={r.id} className="flex items-center gap-3 px-5 py-3.5">
+          <div key={r.id} className="group flex items-center gap-3 px-5 py-3.5">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-50">
               <ReceiptText className="h-5 w-5 text-brand" />
             </span>
@@ -38,16 +42,29 @@ export function Belege() {
             </div>
             <span
               className="rounded-md px-2 py-1 text-[0.68rem] font-semibold"
-              style={{
-                background: CATEGORY_COLORS[r.category] + '1a',
-                color: CATEGORY_COLORS[r.category],
-              }}
+              style={{ background: CATEGORY_COLORS[r.category] + '1a', color: CATEGORY_COLORS[r.category] }}
             >
               {CATEGORY_LABELS[r.category]}
             </span>
             <span className="w-20 text-right text-[0.9rem] font-bold text-ink">
               {formatEuro(r.amount, true)} €
             </span>
+            <div className="flex shrink-0 gap-1">
+              <button
+                onClick={() => setEditing(r)}
+                className="grid h-8 w-8 place-items-center rounded-lg text-ink-soft hover:bg-brand-50 hover:text-brand"
+                aria-label="Bearbeiten"
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => deleteReceipt(r.id)}
+                className="grid h-8 w-8 place-items-center rounded-lg text-ink-soft hover:bg-red-50 hover:text-danger"
+                aria-label="Löschen"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         ))}
         {receipts.length === 0 && (
@@ -56,6 +73,8 @@ export function Belege() {
           </p>
         )}
       </Card>
+
+      {editing && <ReceiptModal editing={editing} onClose={() => setEditing(null)} />}
     </div>
   );
 }

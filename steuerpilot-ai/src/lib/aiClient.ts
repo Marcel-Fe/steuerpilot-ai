@@ -1,7 +1,7 @@
 // Einzige Stelle im Frontend, die den KI-Worker kennt.
 // Der Gemini-Key liegt NICHT hier, sondern als Secret im Cloudflare-Worker.
 
-import type { ChatMessage } from '../types';
+import type { ChatMessage, ExpenseCategory } from '../types';
 
 const ENDPOINT = import.meta.env.VITE_KI_ENDPOINT as string | undefined;
 
@@ -39,5 +39,29 @@ export async function askAi(
     return data.reply || 'Dazu habe ich gerade keine Antwort.';
   } catch {
     return 'Die KI ist gerade nicht erreichbar. Bitte Internetverbindung prüfen und erneut versuchen.';
+  }
+}
+
+export interface ReceiptExtraction {
+  vendor?: string;
+  amount?: number;
+  date?: string;
+  category?: ExpenseCategory;
+}
+
+// Liest ein Belegfoto per Gemini Vision aus (gibt null bei Fehler).
+export async function extractReceipt(imageDataUrl: string): Promise<ReceiptExtraction | null> {
+  if (!aiConfigured()) return null;
+  try {
+    const res = await fetch(ENDPOINT as string, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: imageDataUrl }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.extraction) return null;
+    return data.extraction as ReceiptExtraction;
+  } catch {
+    return null;
   }
 }

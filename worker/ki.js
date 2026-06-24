@@ -47,6 +47,11 @@ export default {
     let body;
     try { body = await request.json(); } catch { return json({ error: 'Ungültiges JSON.' }, 400); }
 
+    // --- OCR-Modus: Belegfoto auslesen (Gemini Vision) ---
+    if (body.image) {
+      return await handleOcr(body.image, apiKey);
+    }
+
     const messages = Array.isArray(body.messages) ? body.messages : [];
     if (!messages.length) return json({ error: 'Keine Nachrichten.' }, 400);
 
@@ -90,6 +95,63 @@ export default {
     return json({ reply });
   }
 };
+
+// Liest einen Beleg per Gemini Vision aus und gibt strukturierte Felder zurück.
+async function handleOcr(imageDataUrl, apiKey) {
+  const match = /^data:(image\/[a-zA-Z+]+);base64,(.+)$/.exec(imageDataUrl || '');
+  if (!match) return json({ error: 'Ungültiges Bildformat.' }, 400);
+  const [, mimeType, base64] = match;
+
+  const prompt = `Lies diesen deutschen Kassenbon/Beleg aus. Gib NUR die geforderten Felder zurück.
+- vendor: Name des Händlers/Geschäfts.
+- amount: Gesamtbetrag in Euro als Zahl (Punkt als Dezimaltrennzeichen, kein Währungszeichen).
+- date: Datum im Format YYYY-MM-DD. Wenn unklar, leer lassen.
+- category: ordne grob zu eine von arbeitsmittel, fahrtkosten, homeoffice, fortbildung, sonstiges.`;
+
+  const payload = {
+    contents: [
+      { role: 'user', parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: base64 } }] },
+    ],
+    generationConfig: {
+      temperature: 0.1,
+      responseMimeType: 'application/json',
+      responseSchema: {
+        type: 'object',
+        properties: {
+          vendor: { type: 'string' },
+          amount: { type: 'number' },
+          date: { type: 'string' },
+          category: {
+            type: 'string',
+            enum: ['arbeitsmittel', 'fahrtkosten', 'homeoffice', 'fortbildung', 'sonstiges'],
+          },
+        },
+        required: ['vendor', 'amount', 'category'],
+      },
+    },
+  };
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`;
+  let res;
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    return json({ error: 'KI nicht erreichbar.' }, 502);
+  }
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '');
+    return json({ error: 'KI-Fehler', status: res.status, detail: detail.slice(0, 300) }, 502);
+  }
+  const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') || '{}';
+  let extraction;
+  try { extraction = JSON.parse(text); } catch { return json({ error: 'Antwort nicht lesbar.' }, 502); }
+  return json({ extraction });
+}
 
 function json(obj, status = 200) {
   return new Response(JSON.stringify(obj), {

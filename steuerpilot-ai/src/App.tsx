@@ -7,6 +7,8 @@ import { Belege } from './pages/Belege';
 import { Checkliste } from './pages/Checkliste';
 import { Ausgaben } from './pages/Ausgaben';
 import { Fristen } from './pages/Fristen';
+import { Analyse } from './pages/Analyse';
+import { Einstellungen } from './pages/Einstellungen';
 import { ComingSoon } from './pages/ComingSoon';
 
 export default function App() {
@@ -20,10 +22,10 @@ export default function App() {
             <Route path="belege" element={<Belege />} />
             <Route path="checkliste" element={<Checkliste />} />
             <Route path="ausgaben" element={<Ausgaben />} />
-            <Route path="analyse" element={<ComingSoon title="Steuer-Analyse" />} />
+            <Route path="analyse" element={<Analyse />} />
             <Route path="fristen" element={<Fristen />} />
             <Route path="dokumente" element={<ComingSoon title="Dokumente" />} />
-            <Route path="einstellungen" element={<ComingSoon title="Einstellungen" />} />
+            <Route path="einstellungen" element={<Einstellungen />} />
             <Route path="*" element={<Dashboard />} />
           </Route>
         </Routes>

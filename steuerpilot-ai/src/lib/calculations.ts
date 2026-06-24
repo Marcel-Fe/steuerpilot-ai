@@ -78,6 +78,30 @@ export function deadlineViews(deadlines: Deadline[], today = new Date()): Deadli
     .sort((a, b) => a.daysLeft - b.daysLeft);
 }
 
+export interface MonthSum {
+  month: string; // "YYYY-MM"
+  label: string; // "Jan", "Feb" …
+  amount: number;
+}
+
+const MONTH_LABELS = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+
+// Ausgaben je Monat (chronologisch) — für den Verlaufs-Chart
+export function expensesByMonth(receipts: Receipt[]): MonthSum[] {
+  const totals = new Map<string, number>();
+  for (const r of receipts) {
+    const key = r.date.slice(0, 7);
+    totals.set(key, (totals.get(key) ?? 0) + r.amount);
+  }
+  return [...totals.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([month, amount]) => ({
+      month,
+      label: MONTH_LABELS[parseInt(month.slice(5, 7), 10) - 1] ?? month,
+      amount: Math.round(amount * 100) / 100,
+    }));
+}
+
 // Kompakter Profil-Kontext für den KI-Worker
 export function aiProfileContext(state: AppState) {
   return {
