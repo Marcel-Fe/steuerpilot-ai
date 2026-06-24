@@ -39,7 +39,8 @@ export default {
     if (request.method !== 'POST') {
       return json({ error: 'Nur POST erlaubt.' }, 405);
     }
-    if (!env.GEMINI_API_KEY) {
+    const apiKey = (env.GEMINI_API_KEY || '').trim();
+    if (!apiKey) {
       return json({ error: 'Server nicht konfiguriert (GEMINI_API_KEY fehlt).' }, 500);
     }
 
@@ -66,7 +67,7 @@ export default {
       generationConfig: { temperature: 0.5, maxOutputTokens: 800 }
     };
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${env.GEMINI_API_KEY}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`;
 
     let geminiRes;
     try {
