@@ -76,11 +76,7 @@ export default {
 
     let geminiRes;
     try {
-      geminiRes = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      geminiRes = await geminiFetch(url, payload);
     } catch {
       return json({ error: 'KI nicht erreichbar.' }, 502);
     }
@@ -134,11 +130,7 @@ async function handleOcr(imageDataUrl, apiKey) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`;
   let res;
   try {
-    res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    res = await geminiFetch(url, payload);
   } catch {
     return json({ error: 'KI nicht erreichbar.' }, 502);
   }
@@ -151,6 +143,22 @@ async function handleOcr(imageDataUrl, apiKey) {
   let extraction;
   try { extraction = JSON.parse(text); } catch { return json({ error: 'Antwort nicht lesbar.' }, 502); }
   return json({ extraction });
+}
+
+// Gemini-Aufruf mit Retry bei transienten Fehlern (429/500/503).
+async function geminiFetch(url, payload, attempts = 3) {
+  const body = JSON.stringify(payload);
+  let res;
+  for (let i = 0; i < attempts; i++) {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+    });
+    if (res.ok || ![429, 500, 503].includes(res.status) || i === attempts - 1) return res;
+    await new Promise((r) => setTimeout(r, 600 * (i + 1)));
+  }
+  return res;
 }
 
 function json(obj, status = 200) {
