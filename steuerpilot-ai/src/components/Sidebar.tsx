@@ -6,8 +6,10 @@ import {
   ListChecks,
   Wallet,
   BarChart3,
+  Bitcoin,
   CalendarClock,
   FileText,
+  Mail,
   Settings,
   Sparkles,
   ChevronDown,
@@ -21,16 +23,19 @@ const NAV = [
   { to: '/checkliste', label: 'Steuer-Checkliste', icon: ListChecks },
   { to: '/ausgaben', label: 'Ausgaben', icon: Wallet },
   { to: '/analyse', label: 'Steuer-Analyse', icon: BarChart3 },
+  { to: '/krypto', label: 'Krypto', icon: Bitcoin },
   { to: '/fristen', label: 'Fristen & Termine', icon: CalendarClock },
   { to: '/dokumente', label: 'Dokumente', icon: FileText },
+  { to: '/steuerberater', label: 'Steuerberater', icon: Mail },
   { to: '/einstellungen', label: 'Einstellungen', icon: Settings },
 ];
 
-export function Sidebar() {
+// Inhalt der Seitenleiste — geteilt von Desktop-Sidebar und mobilem Drawer.
+export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { state } = useApp();
 
   return (
-    <aside className="hidden lg:flex w-[248px] shrink-0 flex-col gap-6 px-5 py-6">
+    <div className="flex h-full flex-col gap-6">
       <div className="flex items-center gap-2.5 px-2">
         <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand to-indigo-700">
           <Sparkles className="h-5 w-5 text-white" />
@@ -40,12 +45,13 @@ export function Sidebar() {
         </span>
       </div>
 
-      <nav className="flex flex-col gap-1">
+      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto">
         {NAV.map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}
             to={to}
             end={end}
+            onClick={onNavigate}
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-xl px-3 py-2.5 text-[0.92rem] font-medium transition-colors ${
                 isActive
@@ -60,13 +66,11 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="mt-auto flex flex-col gap-4">
+      <div className="flex flex-col gap-4">
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-ink-900 to-brand-700 p-4 text-white">
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold">Premium</span>
-            <span className="rounded-md bg-white/20 px-1.5 py-0.5 text-[0.62rem] font-bold tracking-wide">
-              PRO
-            </span>
+            <span className="rounded-md bg-white/20 px-1.5 py-0.5 text-[0.62rem] font-bold tracking-wide">PRO</span>
           </div>
           <p className="mt-1.5 text-[0.78rem] leading-snug text-white/80">
             Maximiere dein Steuerpotenzial mit allen Premium-Features.
@@ -81,14 +85,21 @@ export function Sidebar() {
             {state.profile.name.split(' ').map((p) => p[0]).join('').slice(0, 2)}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[0.85rem] font-semibold text-ink">
-              {state.profile.name}
-            </p>
+            <p className="truncate text-[0.85rem] font-semibold text-ink">{state.profile.name}</p>
             <p className="text-[0.72rem] text-ink-soft">{state.profile.role}</p>
           </div>
           <ChevronDown className="h-4 w-4 text-ink-soft" />
         </div>
       </div>
+    </div>
+  );
+}
+
+// Feste Sidebar auf Desktop
+export function Sidebar() {
+  return (
+    <aside className="hidden w-[248px] shrink-0 px-5 py-6 lg:block">
+      <SidebarContent />
     </aside>
   );
 }

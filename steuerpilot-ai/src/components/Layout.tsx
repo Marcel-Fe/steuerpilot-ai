@@ -1,16 +1,20 @@
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
-import { ShieldCheck, MapPin, Lock } from 'lucide-react';
-import { Sidebar } from './Sidebar';
+import { Outlet, useLocation } from 'react-router-dom';
+import { ShieldCheck, MapPin, Lock, X } from 'lucide-react';
+import { Sidebar, SidebarContent } from './Sidebar';
 import { Header } from './Header';
 import { ReceiptModal } from './ReceiptModal';
 import { UiContext } from '../state/UiContext';
 
 export function Layout() {
   const [modalOpen, setModalOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
 
   return (
-    <UiContext.Provider value={{ openReceiptModal: () => setModalOpen(true) }}>
+    <UiContext.Provider
+      value={{ openReceiptModal: () => setModalOpen(true), openMenu: () => setMenuOpen(true) }}
+    >
       <div className="mx-auto flex min-h-screen max-w-[1500px]">
         <Sidebar />
 
@@ -33,6 +37,27 @@ export function Layout() {
           </footer>
         </div>
       </div>
+
+      {/* Mobiler Drawer */}
+      {menuOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden" onClick={() => setMenuOpen(false)}>
+          <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" />
+          <div
+            className="absolute left-0 top-0 h-full w-[270px] overflow-y-auto bg-bg p-5 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+            key={location.pathname}
+          >
+            <button
+              onClick={() => setMenuOpen(false)}
+              className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-lg text-ink-soft hover:bg-brand-50"
+              aria-label="Menü schließen"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <SidebarContent onNavigate={() => setMenuOpen(false)} />
+          </div>
+        </div>
+      )}
 
       {modalOpen && <ReceiptModal onClose={() => setModalOpen(false)} />}
     </UiContext.Provider>

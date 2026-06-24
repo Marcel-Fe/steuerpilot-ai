@@ -2,6 +2,7 @@ import { createContext, useContext } from 'react';
 
 export interface UiContextValue {
   openReceiptModal: () => void;
+  openMenu: () => void;
 }
 
 export const UiContext = createContext<UiContextValue | null>(null);

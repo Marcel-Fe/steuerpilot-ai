@@ -1,4 +1,4 @@
-import { Search, Bell, ScanLine } from 'lucide-react';
+import { Search, Bell, ScanLine, Menu } from 'lucide-react';
 import { useApp } from '../state/AppContext';
 import { useUi } from '../state/UiContext';
 
@@ -11,18 +11,27 @@ function greeting(): string {
 
 export function Header() {
   const { state } = useApp();
-  const { openReceiptModal } = useUi();
+  const { openReceiptModal, openMenu } = useUi();
   const firstName = state.profile.name.split(' ')[0];
 
   return (
     <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-ink">
-          {greeting()}, {firstName}! <span className="align-middle">👋</span>
-        </h1>
-        <p className="mt-0.5 text-sm text-ink-soft">
-          Dein Steuer-Cockpit für {state.profile.taxYear}
-        </p>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={openMenu}
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-surface shadow-[var(--shadow-card)] lg:hidden"
+          aria-label="Menü öffnen"
+        >
+          <Menu className="h-5 w-5 text-ink" />
+        </button>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-ink">
+            {greeting()}, {firstName}! <span className="align-middle">👋</span>
+          </h1>
+          <p className="mt-0.5 text-sm text-ink-soft">
+            Dein Steuer-Cockpit für {state.profile.taxYear}
+          </p>
+        </div>
       </div>
 
       <div className="flex items-center gap-3">

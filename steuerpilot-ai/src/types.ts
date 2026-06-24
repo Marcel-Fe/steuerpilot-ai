@@ -16,7 +16,21 @@ export interface TaxProfile {
   name: string;
   role: string; // z.B. "Angestellter"
   taxYear: number;
+  advisorEmail?: string; // E-Mail des Steuerberaters
   createdAt: string;
+}
+
+export type CryptoKind = 'kauf' | 'verkauf';
+
+export interface CryptoTransaction {
+  id: string;
+  asset: string; // z.B. "BTC", "ETH"
+  kind: CryptoKind;
+  date: string; // ISO YYYY-MM-DD
+  quantity: number; // Menge der Coins
+  totalEur: number; // gezahlter/erhaltener Gesamtbetrag in Euro
+  feeEur?: number;
+  note?: string;
 }
 
 export interface Receipt {
@@ -54,6 +68,7 @@ export interface AppState {
   receipts: Receipt[];
   deadlines: Deadline[];
   checklist: ChecklistItem[];
+  crypto: CryptoTransaction[];
 }
 
 export const CATEGORY_LABELS: Record<ExpenseCategory, string> = {

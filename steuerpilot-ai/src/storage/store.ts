@@ -8,6 +8,7 @@ import type {
   ChecklistItem,
   Deadline,
   ExpenseCategory,
+  CryptoTransaction,
 } from '../types';
 
 const STORAGE_KEY = 'steuerpilot.state.v1';
@@ -75,24 +76,44 @@ const SEED_DEADLINES: Deadline[] = [
   { id: uid(), title: 'Zahlung 1. Rate', dueDate: '2026-05-15', status: 'überfällig' },
 ];
 
+const SEED_CRYPTO: CryptoTransaction[] = [
+  { id: uid(), asset: 'BTC', kind: 'kauf', date: '2024-02-10', quantity: 0.05, totalEur: 2100 },
+  { id: uid(), asset: 'ETH', kind: 'kauf', date: '2025-09-01', quantity: 1.2, totalEur: 3000 },
+  { id: uid(), asset: 'BTC', kind: 'verkauf', date: '2026-04-20', quantity: 0.03, totalEur: 1950 },
+];
+
 function seedState(): AppState {
   return {
     profile: {
       name: 'Max Mustermann',
       role: 'Angestellter',
       taxYear: 2026,
+      advisorEmail: '',
       createdAt: new Date().toISOString(),
     },
     receipts: buildSeedReceipts(),
     deadlines: SEED_DEADLINES,
     checklist: SEED_CHECKLIST,
+    crypto: SEED_CRYPTO,
+  };
+}
+
+// Füllt fehlende Felder bei älteren gespeicherten Ständen (Migration).
+function normalize(s: Partial<AppState>): AppState {
+  const seed = seedState();
+  return {
+    profile: { ...seed.profile, ...(s.profile ?? {}) },
+    receipts: s.receipts ?? [],
+    deadlines: s.deadlines ?? [],
+    checklist: s.checklist ?? [],
+    crypto: s.crypto ?? [],
   };
 }
 
 export function loadState(): AppState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as AppState;
+    if (raw) return normalize(JSON.parse(raw) as Partial<AppState>);
   } catch {
     // korrupte Daten → mit Seed neu starten
   }

@@ -8,6 +8,7 @@ import {
 } from 'react';
 import type {
   AppState,
+  CryptoTransaction,
   Deadline,
   ExpenseCategory,
   Receipt,
@@ -34,6 +35,8 @@ interface AppContextValue {
   upsertDeadline: (deadline: Deadline) => void;
   deleteDeadline: (id: string) => void;
   updateProfile: (patch: Partial<TaxProfile>) => void;
+  addCrypto: (tx: Omit<CryptoTransaction, 'id'>) => void;
+  deleteCrypto: (id: string) => void;
   replaceState: (next: AppState) => void;
   reset: () => void;
 }
@@ -129,6 +132,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [mutate],
   );
 
+  const addCrypto = useCallback(
+    (tx: Omit<CryptoTransaction, 'id'>) =>
+      mutate((prev) => ({ ...prev, crypto: [{ id: uid(), ...tx }, ...prev.crypto] })),
+    [mutate],
+  );
+
+  const deleteCrypto = useCallback(
+    (id: string) =>
+      mutate((prev) => ({ ...prev, crypto: prev.crypto.filter((c) => c.id !== id) })),
+    [mutate],
+  );
+
   const replaceState = useCallback((next: AppState) => mutate(() => next), [mutate]);
 
   const reset = useCallback(() => {
@@ -148,6 +163,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       upsertDeadline,
       deleteDeadline,
       updateProfile,
+      addCrypto,
+      deleteCrypto,
       replaceState,
       reset,
     }),
@@ -162,6 +179,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       upsertDeadline,
       deleteDeadline,
       updateProfile,
+      addCrypto,
+      deleteCrypto,
       replaceState,
       reset,
     ],
