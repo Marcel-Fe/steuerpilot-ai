@@ -1,4 +1,4 @@
-import { Search, ScanLine, Menu, Briefcase, User } from 'lucide-react';
+import { Search, ScanLine, Menu, Briefcase, User, Share2 } from 'lucide-react';
 import { useApp } from '../state/AppContext';
 import { useUi } from '../state/UiContext';
 import { NotificationsBell } from './NotificationsBell';
@@ -16,6 +16,23 @@ export function Header() {
   const firstName = state.profile.name.split(' ')[0];
   const sortedYears = [...state.years].sort((a, b) => b.year - a.year);
   const isBusiness = year.mode === 'unternehmer';
+
+  const share = async () => {
+    const data = {
+      title: 'SteuerPilot AI',
+      text: 'Mein Steuer-Cockpit mit KI-Assistent',
+      url: window.location.href,
+    };
+    try {
+      if (navigator.share) await navigator.share(data);
+      else {
+        await navigator.clipboard.writeText(data.url);
+        alert('Link in die Zwischenablage kopiert.');
+      }
+    } catch {
+      /* Nutzer hat abgebrochen */
+    }
+  };
 
   return (
     <header className="no-print flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -65,6 +82,15 @@ export function Header() {
             className="w-56 rounded-xl border border-line bg-surface py-2.5 pl-9 pr-3 text-sm outline-none focus:border-brand"
           />
         </div>
+
+        <button
+          onClick={share}
+          className="grid h-11 w-11 place-items-center rounded-xl bg-surface shadow-[var(--shadow-card)]"
+          aria-label="Teilen"
+          title="Teilen"
+        >
+          <Share2 className="h-5 w-5 text-ink-soft" />
+        </button>
 
         <NotificationsBell />
 

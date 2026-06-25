@@ -63,6 +63,20 @@ export function Einstellungen() {
     <div className="flex max-w-2xl flex-col gap-5">
       <h1 className="text-xl font-bold text-ink">Einstellungen</h1>
 
+      <Card className="relative overflow-hidden bg-gradient-to-br from-ink-900 to-brand-700 p-6 text-white">
+        <div className="flex items-center gap-2">
+          <span className="text-base font-bold">Premium</span>
+          <span className="rounded-md bg-white/20 px-1.5 py-0.5 text-[0.62rem] font-bold tracking-wide">PRO</span>
+        </div>
+        <p className="mt-1.5 max-w-md text-[0.86rem] leading-snug text-white/80">
+          Maximiere dein Steuerpotenzial mit allen Premium-Features: unbegrenzte KI-Beratung, mehrere
+          Jahre, Cloud-Sync und Export.
+        </p>
+        <button className="mt-4 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-brand-700 transition-transform hover:scale-[1.02]">
+          Jetzt upgraden
+        </button>
+      </Card>
+
       <Card className="p-6">
         <h2 className="text-base font-bold text-ink">Profil</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">

@@ -11,6 +11,7 @@ import { Fristen } from './pages/Fristen';
 import { Analyse } from './pages/Analyse';
 import { Krypto } from './pages/Krypto';
 import { Unternehmer } from './pages/Unternehmer';
+import { Rechnungen } from './pages/Rechnungen';
 import { Steuerberater } from './pages/Steuerberater';
 import { Dokumente } from './pages/Dokumente';
 import { Einstellungen } from './pages/Einstellungen';
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="analyse" element={<Analyse />} />
             <Route path="krypto" element={<Krypto />} />
             <Route path="unternehmer" element={<Unternehmer />} />
+            <Route path="rechnungen" element={<Rechnungen />} />
             <Route path="fristen" element={<Fristen />} />
             <Route path="dokumente" element={<Dokumente />} />
             <Route path="steuerberater" element={<Steuerberater />} />

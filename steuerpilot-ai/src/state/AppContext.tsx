@@ -12,12 +12,15 @@ import type {
   Deadline,
   ExpenseCategory,
   IncomeEntry,
+  Invoice,
   Receipt,
+  RecurringCost,
   TaxMode,
   TaxProfile,
   YearData,
 } from '../types';
 import { loadState, saveState, resetState, makeYear, uid } from '../storage/store';
+import { applyRecurring } from '../lib/recurring';
 
 interface NewReceiptInput {
   date: string;
@@ -43,6 +46,14 @@ interface AppContextValue {
   // Einnahmen (Unternehmer)
   addIncome: (input: Omit<IncomeEntry, 'id'>) => void;
   deleteIncome: (id: string) => void;
+  // Rechnungen (Unternehmer)
+  addInvoice: (input: Omit<Invoice, 'id' | 'createdAt' | 'paid'>) => void;
+  deleteInvoice: (id: string) => void;
+  toggleInvoicePaid: (id: string) => void;
+  // Wiederkehrende Kosten
+  addRecurring: (input: Omit<RecurringCost, 'id' | 'lastPosted'>) => void;
+  deleteRecurring: (id: string) => void;
+  postDueRecurring: () => void;
   // Checkliste
   toggleChecklist: (id: string) => void;
   addChecklistItem: (title: string, subtitle?: string) => void;
@@ -143,6 +154,41 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [mutateYear],
   );
 
+  // --- Rechnungen ---
+  const addInvoice = useCallback(
+    (input: Omit<Invoice, 'id' | 'createdAt' | 'paid'>) =>
+      mutateYear((y) => ({
+        ...y,
+        invoices: [{ id: uid(), createdAt: new Date().toISOString(), paid: false, ...input }, ...y.invoices],
+      })),
+    [mutateYear],
+  );
+
+  const deleteInvoice = useCallback(
+    (id: string) => mutateYear((y) => ({ ...y, invoices: y.invoices.filter((i) => i.id !== id) })),
+    [mutateYear],
+  );
+
+  const toggleInvoicePaid = useCallback(
+    (id: string) =>
+      mutateYear((y) => ({ ...y, invoices: y.invoices.map((i) => (i.id === id ? { ...i, paid: !i.paid } : i)) })),
+    [mutateYear],
+  );
+
+  // --- Wiederkehrende Kosten ---
+  const addRecurring = useCallback(
+    (input: Omit<RecurringCost, 'id' | 'lastPosted'>) =>
+      mutateYear((y) => ({ ...y, recurring: [{ id: uid(), ...input }, ...y.recurring] })),
+    [mutateYear],
+  );
+
+  const deleteRecurring = useCallback(
+    (id: string) => mutateYear((y) => ({ ...y, recurring: y.recurring.filter((r) => r.id !== id) })),
+    [mutateYear],
+  );
+
+  const postDueRecurring = useCallback(() => mutateYear((y) => applyRecurring(y)), [mutateYear]);
+
   // --- Checkliste ---
   const toggleChecklist = useCallback(
     (id: string) => mutateYear((y) => ({ ...y, checklist: y.checklist.map((c) => (c.id === id ? { ...c, done: !c.done } : c)) })),
@@ -210,6 +256,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setActiveYear, addYear, deleteYear, setYearMode, setYearNumber,
       addReceipt, updateReceipt, deleteReceipt,
       addIncome, deleteIncome,
+      addInvoice, deleteInvoice, toggleInvoicePaid,
+      addRecurring, deleteRecurring, postDueRecurring,
       toggleChecklist, addChecklistItem, deleteChecklistItem,
       upsertDeadline, deleteDeadline,
       addCrypto, deleteCrypto,
@@ -220,6 +268,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setActiveYear, addYear, deleteYear, setYearMode, setYearNumber,
       addReceipt, updateReceipt, deleteReceipt,
       addIncome, deleteIncome,
+      addInvoice, deleteInvoice, toggleInvoicePaid,
+      addRecurring, deleteRecurring, postDueRecurring,
       toggleChecklist, addChecklistItem, deleteChecklistItem,
       upsertDeadline, deleteDeadline,
       addCrypto, deleteCrypto,

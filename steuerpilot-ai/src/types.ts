@@ -62,6 +62,39 @@ export interface IncomeEntry {
   note?: string;
 }
 
+// Ausgangsrechnung (Unternehmer)
+export interface InvoiceItem {
+  description: string;
+  quantity: number;
+  unitPrice: number; // netto pro Einheit
+}
+
+export interface Invoice {
+  id: string;
+  number: string; // z.B. RE-2026-001
+  date: string; // ISO YYYY-MM-DD
+  client: string;
+  clientAddress?: string;
+  items: InvoiceItem[];
+  taxRate: number; // % USt (0 = Kleinunternehmer)
+  note?: string;
+  paid: boolean;
+  createdAt: string;
+}
+
+export type RecurringInterval = 'monatlich' | 'quartal' | 'jaehrlich';
+
+// Wiederkehrende Kosten, die automatisch als Belege gebucht werden
+export interface RecurringCost {
+  id: string;
+  name: string;
+  category: ExpenseCategory;
+  amount: number;
+  interval: RecurringInterval;
+  startDate: string; // ISO YYYY-MM-DD
+  lastPosted?: string; // ISO Datum der zuletzt erzeugten Periode
+}
+
 export interface Deadline {
   id: string;
   title: string;
@@ -88,6 +121,8 @@ export interface YearData {
   mode: TaxMode;
   receipts: Receipt[];
   income: IncomeEntry[];
+  invoices: Invoice[];
+  recurring: RecurringCost[];
   deadlines: Deadline[];
   checklist: ChecklistItem[];
   crypto: CryptoTransaction[];

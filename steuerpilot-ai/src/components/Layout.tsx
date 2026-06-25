@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
-import { ShieldCheck, MapPin, Lock, X } from 'lucide-react';
+import { Outlet, useLocation, Link } from 'react-router-dom';
+import { ShieldCheck, MapPin, Lock, X, Bot } from 'lucide-react';
 import { Sidebar, SidebarContent } from './Sidebar';
 import { Header } from './Header';
 import { ReceiptModal } from './ReceiptModal';
@@ -58,6 +58,16 @@ export function Layout() {
           </div>
         </div>
       )}
+
+      {/* Schwebender KI-Schnellzugriff */}
+      <Link
+        to="/assistent"
+        className="no-print fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full bg-gradient-to-br from-brand to-indigo-700 px-5 py-3.5 text-sm font-semibold text-white shadow-lg transition-transform hover:scale-105"
+        aria-label="KI-Assistent öffnen"
+      >
+        <Bot className="h-5 w-5" />
+        <span className="hidden sm:inline">KI fragen</span>
+      </Link>
 
       {modalOpen && <ReceiptModal onClose={() => setModalOpen(false)} />}
     </UiContext.Provider>

@@ -8,6 +8,7 @@ import {
   BarChart3,
   Bitcoin,
   Briefcase,
+  FileSpreadsheet,
   CalendarClock,
   FileText,
   Mail,
@@ -28,6 +29,7 @@ const NAV = [
   { to: '/analyse', label: 'Steuer-Analyse', icon: BarChart3 },
   { to: '/krypto', label: 'Krypto', icon: Bitcoin },
   { to: '/unternehmer', label: 'Unternehmer', icon: Briefcase },
+  { to: '/rechnungen', label: 'Rechnungen & Kosten', icon: FileSpreadsheet },
   { to: '/fristen', label: 'Fristen & Termine', icon: CalendarClock },
   { to: '/dokumente', label: 'Dokumente', icon: FileText },
   { to: '/steuerberater', label: 'Steuerberater', icon: Mail },
@@ -72,19 +74,6 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       <div className="flex flex-col gap-4">
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-ink-900 to-brand-700 p-4 text-white">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold">Premium</span>
-            <span className="rounded-md bg-white/20 px-1.5 py-0.5 text-[0.62rem] font-bold tracking-wide">PRO</span>
-          </div>
-          <p className="mt-1.5 text-[0.78rem] leading-snug text-white/80">
-            Maximiere dein Steuerpotenzial mit allen Premium-Features.
-          </p>
-          <button className="mt-3 rounded-lg bg-white px-3.5 py-1.5 text-[0.8rem] font-semibold text-brand-700 transition-transform hover:scale-[1.02]">
-            Upgrade
-          </button>
-        </div>
-
         <div className="flex items-center gap-3 rounded-2xl bg-surface px-3 py-2.5 shadow-[var(--shadow-card)]">
           <div className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-sm font-bold text-brand-700">
             {state.profile.name.split(' ').map((p) => p[0]).join('').slice(0, 2)}
