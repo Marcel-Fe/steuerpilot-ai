@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Download, Upload, RotateCcw, Save, Lock, LogOut } from 'lucide-react';
 import { Card } from '../components/Card';
 import { YearManager } from '../components/YearManager';
+import { CloudAccountCard } from '../components/CloudAccountCard';
 import { useApp } from '../state/AppContext';
 import { useAuth } from '../state/AuthContext';
 import type { AppState } from '../types';
@@ -91,6 +92,8 @@ export function Einstellungen() {
           <Save className="h-4 w-4" /> Profil speichern
         </button>
       </Card>
+
+      <CloudAccountCard />
 
       <YearManager />
 

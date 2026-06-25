@@ -1,5 +1,6 @@
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { AppProvider } from './state/AppContext';
+import { CloudProvider } from './state/CloudContext';
 import { AuthProvider } from './state/AuthContext';
 import { Layout } from './components/Layout';
 import { Dashboard } from './pages/Dashboard';
@@ -19,6 +20,7 @@ import { Einstellungen } from './pages/Einstellungen';
 export default function App() {
   return (
     <AppProvider>
+      <CloudProvider>
       <AuthProvider>
       <HashRouter>
         <Routes>
@@ -41,6 +43,7 @@ export default function App() {
         </Routes>
       </HashRouter>
       </AuthProvider>
+      </CloudProvider>
     </AppProvider>
   );
 }
