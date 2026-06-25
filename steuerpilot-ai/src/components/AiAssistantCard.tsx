@@ -21,7 +21,7 @@ const SUGGESTIONS = [
 ];
 
 export function AiAssistantCard() {
-  const { state } = useApp();
+  const { state, year } = useApp();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -42,7 +42,7 @@ export function AiAssistantCard() {
     setMessages(next);
     setInput('');
     setLoading(true);
-    const reply = await askAi(next, aiProfileContext(state));
+    const reply = await askAi(next, aiProfileContext(state.profile, year));
     setMessages([...next, { role: 'assistant', content: reply }]);
     setLoading(false);
     if (voiceOutRef.current) speak(reply);

@@ -25,11 +25,11 @@ const TIPS = [
 ];
 
 export function Analyse() {
-  const { state } = useApp();
-  const months = expensesByMonth(state.receipts);
-  const categories = expensesByCategory(state.receipts);
-  const total = totalExpenses(state.receipts);
-  const potential = estimatedPotential(state.receipts);
+  const { year } = useApp();
+  const months = expensesByMonth(year.receipts);
+  const categories = expensesByCategory(year.receipts);
+  const total = totalExpenses(year.receipts);
+  const potential = estimatedPotential(year.receipts);
 
   return (
     <div className="flex flex-col gap-5">
@@ -46,7 +46,7 @@ export function Analyse() {
         </Card>
         <Card className="p-5">
           <p className="text-sm text-ink-soft">Belege</p>
-          <p className="mt-1 text-2xl font-extrabold text-ink">{state.receipts.length}</p>
+          <p className="mt-1 text-2xl font-extrabold text-ink">{year.receipts.length}</p>
         </Card>
       </div>
 

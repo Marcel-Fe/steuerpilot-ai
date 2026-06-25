@@ -2,11 +2,21 @@
 // Beträge in Euro (number), Datumswerte als ISO-String "YYYY-MM-DD".
 
 export type ExpenseCategory =
+  // Angestellte (Werbungskosten)
   | 'arbeitsmittel'
   | 'fahrtkosten'
   | 'homeoffice'
   | 'fortbildung'
-  | 'sonstiges';
+  | 'sonstiges'
+  // Unternehmer (Betriebsausgaben)
+  | 'wareneinkauf'
+  | 'buero'
+  | 'reisekosten'
+  | 'marketing'
+  | 'versicherungen'
+  | 'miete';
+
+export type TaxMode = 'angestellt' | 'unternehmer';
 
 export type ReceiptStatus = 'offen' | 'geprüft';
 
@@ -15,7 +25,6 @@ export type DeadlineStatus = 'offen' | 'überfällig' | 'erledigt';
 export interface TaxProfile {
   name: string;
   role: string; // z.B. "Angestellter"
-  taxYear: number;
   advisorEmail?: string; // E-Mail des Steuerberaters
   createdAt: string;
 }
@@ -44,6 +53,15 @@ export interface Receipt {
   createdAt: string;
 }
 
+// Einnahme (nur Unternehmer-Modus)
+export interface IncomeEntry {
+  id: string;
+  date: string; // ISO YYYY-MM-DD
+  client: string; // Kunde/Quelle
+  amount: number; // netto/brutto Euro
+  note?: string;
+}
+
 export interface Deadline {
   id: string;
   title: string;
@@ -63,12 +81,22 @@ export interface ChatMessage {
   content: string;
 }
 
-export interface AppState {
-  profile: TaxProfile;
+// Daten eines einzelnen Steuerjahres
+export interface YearData {
+  id: string;
+  year: number;
+  mode: TaxMode;
   receipts: Receipt[];
+  income: IncomeEntry[];
   deadlines: Deadline[];
   checklist: ChecklistItem[];
   crypto: CryptoTransaction[];
+}
+
+export interface AppState {
+  profile: TaxProfile;
+  years: YearData[];
+  activeYearId: string;
 }
 
 export const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
@@ -77,6 +105,12 @@ export const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
   homeoffice: 'Homeoffice',
   fortbildung: 'Fortbildung',
   sonstiges: 'Sonstiges',
+  wareneinkauf: 'Wareneinkauf',
+  buero: 'Büro & Material',
+  reisekosten: 'Reisekosten',
+  marketing: 'Marketing & Werbung',
+  versicherungen: 'Versicherungen & Beiträge',
+  miete: 'Miete & Raumkosten',
 };
 
 export const CATEGORY_COLORS: Record<ExpenseCategory, string> = {
@@ -85,4 +119,17 @@ export const CATEGORY_COLORS: Record<ExpenseCategory, string> = {
   homeoffice: '#2dd4bf',
   fortbildung: '#fb923c',
   sonstiges: '#fbbf24',
+  wareneinkauf: '#6366f1',
+  buero: '#3b82f6',
+  reisekosten: '#2dd4bf',
+  marketing: '#fb923c',
+  versicherungen: '#a855f7',
+  miete: '#f43f5e',
 };
+
+const EMPLOYEE_CATS: ExpenseCategory[] = ['arbeitsmittel', 'fahrtkosten', 'homeoffice', 'fortbildung', 'sonstiges'];
+const BUSINESS_CATS: ExpenseCategory[] = ['wareneinkauf', 'buero', 'reisekosten', 'marketing', 'versicherungen', 'fortbildung', 'miete', 'sonstiges'];
+
+export function categoriesForMode(mode: TaxMode): ExpenseCategory[] {
+  return mode === 'unternehmer' ? BUSINESS_CATS : EMPLOYEE_CATS;
+}

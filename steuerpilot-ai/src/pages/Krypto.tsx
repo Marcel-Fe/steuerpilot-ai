@@ -34,8 +34,8 @@ const INFO = [
 ];
 
 export function Krypto() {
-  const { state, addCrypto, deleteCrypto } = useApp();
-  const result = computeCrypto(state.crypto);
+  const { year, addCrypto, deleteCrypto } = useApp();
+  const result = computeCrypto(year.crypto);
 
   const [asset, setAsset] = useState('BTC');
   const [kind, setKind] = useState<CryptoKind>('kauf');
@@ -57,7 +57,7 @@ export function Krypto() {
     setError('');
   };
 
-  const txs = [...state.crypto].sort((a, b) => b.date.localeCompare(a.date));
+  const txs = [...year.crypto].sort((a, b) => b.date.localeCompare(a.date));
 
   return (
     <div className="flex flex-col gap-5">

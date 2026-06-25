@@ -38,15 +38,15 @@ const POTENTIAL_TREND = [
 const STEP_ICONS = [Wrench, Car, Home, ReceiptText, BookOpen];
 
 export function Dashboard() {
-  const { state, toggleChecklist } = useApp();
+  const { year, toggleChecklist } = useApp();
   const { openReceiptModal } = useUi();
 
-  const progress = taxProgress(state.checklist);
-  const potential = estimatedPotential(state.receipts);
-  const categories = expensesByCategory(state.receipts);
-  const total = totalExpenses(state.receipts);
-  const deadlines = deadlineViews(state.deadlines);
-  const openSteps = state.checklist.filter((c) => !c.done).slice(0, 3);
+  const progress = taxProgress(year.checklist);
+  const potential = estimatedPotential(year.receipts);
+  const categories = expensesByCategory(year.receipts);
+  const total = totalExpenses(year.receipts);
+  const deadlines = deadlineViews(year.deadlines);
+  const openSteps = year.checklist.filter((c) => !c.done).slice(0, 3);
 
   return (
     <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_320px]">
@@ -115,7 +115,7 @@ export function Dashboard() {
                 </div>
                 <div>
                   <p className="text-3xl font-extrabold text-ink">
-                    {state.receipts.length}
+                    {year.receipts.length}
                   </p>
                   <p className="text-[0.82rem] text-ink-soft">Belege gespeichert</p>
                 </div>
@@ -290,7 +290,7 @@ export function Dashboard() {
           <h2 className="text-base font-bold text-ink">Steuer-Wissen</h2>
           <p className="mt-2 text-[0.78rem] text-ink-soft">Neuer Artikel für dich</p>
           <p className="mt-1 text-[0.92rem] font-semibold text-ink">
-            Homeoffice richtig absetzen – So geht's {state.profile.taxYear}
+            Homeoffice richtig absetzen – So geht's {year.year}
           </p>
           <div className="mt-3 grid h-24 place-items-center rounded-xl bg-gradient-to-br from-brand-50 to-emerald-50">
             <Home className="h-8 w-8 text-brand" />

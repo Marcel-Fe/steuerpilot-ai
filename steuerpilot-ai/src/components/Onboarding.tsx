@@ -7,7 +7,7 @@ const currentYear = new Date().getFullYear();
 export function Onboarding({
   onComplete,
 }: {
-  onComplete: (patch: Partial<TaxProfile>, pin?: string) => void | Promise<void>;
+  onComplete: (patch: Partial<TaxProfile>, taxYear: number, pin?: string) => void | Promise<void>;
 }) {
   const [name, setName] = useState('');
   const [role, setRole] = useState('Angestellter');
@@ -27,7 +27,8 @@ export function Onboarding({
     }
     setBusy(true);
     await onComplete(
-      { name: name.trim(), role: role.trim() || 'Angestellter', taxYear: parseInt(taxYear, 10) || currentYear },
+      { name: name.trim(), role: role.trim() || 'Angestellter' },
+      parseInt(taxYear, 10) || currentYear,
       usePin ? pin : undefined,
     );
   };

@@ -9,17 +9,9 @@ export function aiConfigured(): boolean {
   return Boolean(ENDPOINT && ENDPOINT.startsWith('http'));
 }
 
-export interface AiProfile {
-  name: string;
-  role: string;
-  taxYear: number;
-  receiptCount: number;
-  totalExpenses: string;
-}
-
 export async function askAi(
   messages: ChatMessage[],
-  profile: AiProfile,
+  profile: Record<string, unknown>,
 ): Promise<string> {
   if (!aiConfigured()) {
     return 'Der KI-Assistent ist noch nicht verbunden. Bitte den Cloudflare-Worker deployen und die Worker-URL als VITE_KI_ENDPOINT eintragen (siehe CONCEPT.md).';

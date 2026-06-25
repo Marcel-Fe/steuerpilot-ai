@@ -23,7 +23,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { updateProfile } = useApp();
+  const { updateProfile, setYearNumber } = useApp();
   const [auth, setAuth] = useState<AuthData>(() => loadAuth());
   const [locked, setLocked] = useState<boolean>(() => {
     const a = loadAuth();
@@ -31,15 +31,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const completeOnboarding = useCallback(
-    async (patch: Partial<TaxProfile>, pin?: string) => {
+    async (patch: Partial<TaxProfile>, taxYear: number, pin?: string) => {
       updateProfile(patch);
+      setYearNumber(taxYear);
       const pinHash = pin ? await hashPin(pin) : undefined;
       const next: AuthData = { onboarded: true, pinHash };
       saveAuth(next);
       setAuth(next);
       setLocked(false);
     },
-    [updateProfile],
+    [updateProfile, setYearNumber],
   );
 
   const lock = useCallback(() => {

@@ -9,6 +9,8 @@ import type {
   Deadline,
   ExpenseCategory,
   CryptoTransaction,
+  TaxMode,
+  YearData,
 } from '../types';
 
 const STORAGE_KEY = 'steuerpilot.state.v1';
@@ -82,38 +84,104 @@ const SEED_CRYPTO: CryptoTransaction[] = [
   { id: uid(), asset: 'BTC', kind: 'verkauf', date: '2026-04-20', quantity: 0.03, totalEur: 1950 },
 ];
 
-function seedState(): AppState {
+// Leeres Jahr anlegen
+export function makeYear(year: number, mode: TaxMode = 'angestellt'): YearData {
   return {
-    profile: {
-      name: 'Max Mustermann',
-      role: 'Angestellter',
-      taxYear: 2026,
-      advisorEmail: '',
-      createdAt: new Date().toISOString(),
-    },
+    id: uid(),
+    year,
+    mode,
+    receipts: [],
+    income: [],
+    deadlines: [],
+    checklist: [],
+    crypto: [],
+  };
+}
+
+function seedYear(): YearData {
+  return {
+    id: uid(),
+    year: 2026,
+    mode: 'angestellt',
     receipts: buildSeedReceipts(),
+    income: [],
     deadlines: SEED_DEADLINES,
     checklist: SEED_CHECKLIST,
     crypto: SEED_CRYPTO,
   };
 }
 
-// Füllt fehlende Felder bei älteren gespeicherten Ständen (Migration).
-function normalize(s: Partial<AppState>): AppState {
-  const seed = seedState();
+function seedState(): AppState {
+  const year = seedYear();
   return {
-    profile: { ...seed.profile, ...(s.profile ?? {}) },
+    profile: {
+      name: 'Max Mustermann',
+      role: 'Angestellter',
+      advisorEmail: '',
+      createdAt: new Date().toISOString(),
+    },
+    years: [year],
+    activeYearId: year.id,
+  };
+}
+
+// Migriert ältere Stände: flaches Single-Year-Modell → years[]; ergänzt fehlende Felder.
+interface LegacyState {
+  profile?: { name?: string; role?: string; taxYear?: number; advisorEmail?: string; createdAt?: string };
+  receipts?: Receipt[];
+  deadlines?: Deadline[];
+  checklist?: ChecklistItem[];
+  crypto?: CryptoTransaction[];
+  years?: Partial<YearData>[];
+  activeYearId?: string;
+}
+
+function normalizeYear(y: Partial<YearData>): YearData {
+  return {
+    id: y.id ?? uid(),
+    year: y.year ?? 2026,
+    mode: y.mode ?? 'angestellt',
+    receipts: y.receipts ?? [],
+    income: y.income ?? [],
+    deadlines: y.deadlines ?? [],
+    checklist: y.checklist ?? [],
+    crypto: y.crypto ?? [],
+  };
+}
+
+function normalize(s: LegacyState): AppState {
+  const profile = {
+    name: s.profile?.name ?? 'Nutzer',
+    role: s.profile?.role ?? 'Angestellter',
+    advisorEmail: s.profile?.advisorEmail ?? '',
+    createdAt: s.profile?.createdAt ?? new Date().toISOString(),
+  };
+
+  // Neues Modell
+  if (Array.isArray(s.years) && s.years.length) {
+    const years = s.years.map(normalizeYear);
+    const activeYearId = years.some((y) => y.id === s.activeYearId) ? s.activeYearId! : years[0].id;
+    return { profile, years, activeYearId };
+  }
+
+  // Altes flaches Modell → in ein Jahr wandeln
+  const legacyYear: YearData = {
+    id: uid(),
+    year: s.profile?.taxYear ?? 2026,
+    mode: 'angestellt',
     receipts: s.receipts ?? [],
+    income: [],
     deadlines: s.deadlines ?? [],
     checklist: s.checklist ?? [],
     crypto: s.crypto ?? [],
   };
+  return { profile, years: [legacyYear], activeYearId: legacyYear.id };
 }
 
 export function loadState(): AppState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return normalize(JSON.parse(raw) as Partial<AppState>);
+    if (raw) return normalize(JSON.parse(raw) as LegacyState);
   } catch {
     // korrupte Daten → mit Seed neu starten
   }

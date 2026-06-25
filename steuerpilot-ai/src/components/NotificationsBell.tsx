@@ -7,14 +7,14 @@ import { deadlineViews } from '../lib/calculations';
 const SOON_DAYS = 30;
 
 export function NotificationsBell() {
-  const { state } = useApp();
+  const { year } = useApp();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
-  const deadlines = deadlineViews(state.deadlines).filter(
+  const deadlines = deadlineViews(year.deadlines).filter(
     (d) => d.status !== 'erledigt' && (d.overdue || d.daysLeft <= SOON_DAYS),
   );
-  const openTasks = state.checklist.filter((c) => !c.done);
+  const openTasks = year.checklist.filter((c) => !c.done);
   const count = deadlines.length + (openTasks.length > 0 ? 1 : 0);
 
   const go = (to: string) => {

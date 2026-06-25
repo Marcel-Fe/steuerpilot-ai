@@ -10,14 +10,14 @@ import { formatEuro } from '../lib/calculations';
 import { receiptsToCsv, downloadFile } from '../lib/exporters';
 
 export function Belege() {
-  const { state, deleteReceipt } = useApp();
+  const { year, deleteReceipt } = useApp();
   const { openReceiptModal } = useUi();
   const [editing, setEditing] = useState<Receipt | null>(null);
   const [viewing, setViewing] = useState<Receipt | null>(null);
-  const receipts = [...state.receipts].sort((a, b) => b.date.localeCompare(a.date));
+  const receipts = [...year.receipts].sort((a, b) => b.date.localeCompare(a.date));
 
   const exportCsv = () =>
-    downloadFile(`belege-${state.profile.taxYear}.csv`, receiptsToCsv(state.receipts), 'text/csv;charset=utf-8');
+    downloadFile(`belege-${year.year}.csv`, receiptsToCsv(year.receipts), 'text/csv;charset=utf-8');
 
   return (
     <div className="flex flex-col gap-5">

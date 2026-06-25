@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { Download, Upload, RotateCcw, Save, Lock, LogOut } from 'lucide-react';
 import { Card } from '../components/Card';
+import { YearManager } from '../components/YearManager';
 import { useApp } from '../state/AppContext';
 import { useAuth } from '../state/AuthContext';
 import type { AppState } from '../types';
 
 export function Einstellungen() {
-  const { state, updateProfile, replaceState, reset } = useApp();
+  const { state, year, updateProfile, replaceState, reset } = useApp();
   const { hasPin, setPin, removePin, signOut } = useAuth();
   const [name, setName] = useState(state.profile.name);
   const [role, setRole] = useState(state.profile.role);
-  const [taxYear, setTaxYear] = useState(String(state.profile.taxYear));
   const [note, setNote] = useState('');
   const [newPin, setNewPin] = useState('');
 
@@ -25,7 +25,7 @@ export function Einstellungen() {
   };
 
   const saveProfile = () => {
-    updateProfile({ name: name.trim() || 'Nutzer', role: role.trim(), taxYear: parseInt(taxYear, 10) || state.profile.taxYear });
+    updateProfile({ name: name.trim() || 'Nutzer', role: role.trim() });
     setNote('Profil gespeichert ✓');
   };
 
@@ -34,7 +34,7 @@ export function Einstellungen() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `steuerpilot-backup-${state.profile.taxYear}.json`;
+    a.download = `steuerpilot-backup-${year.year}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -42,11 +42,10 @@ export function Einstellungen() {
   const importJson = async (file: File) => {
     try {
       const parsed = JSON.parse(await file.text()) as AppState;
-      if (!parsed.profile || !Array.isArray(parsed.receipts)) throw new Error('invalid');
+      if (!parsed.profile || !Array.isArray(parsed.years)) throw new Error('invalid');
       replaceState(parsed);
       setName(parsed.profile.name);
       setRole(parsed.profile.role);
-      setTaxYear(String(parsed.profile.taxYear));
       setNote('Backup erfolgreich importiert ✓');
     } catch {
       setNote('Import fehlgeschlagen — bitte eine gültige SteuerPilot-Backup-Datei wählen.');
@@ -73,14 +72,13 @@ export function Einstellungen() {
           <Field label="Tätigkeit">
             <input value={role} onChange={(e) => setRole(e.target.value)} className={inputCls} />
           </Field>
-          <Field label="Steuerjahr">
-            <input value={taxYear} onChange={(e) => setTaxYear(e.target.value)} inputMode="numeric" className={inputCls} />
-          </Field>
         </div>
         <button onClick={saveProfile} className="mt-4 flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white">
           <Save className="h-4 w-4" /> Profil speichern
         </button>
       </Card>
+
+      <YearManager />
 
       <Card className="p-6">
         <h2 className="text-base font-bold text-ink">Daten-Backup</h2>

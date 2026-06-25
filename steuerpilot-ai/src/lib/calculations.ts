@@ -1,13 +1,16 @@
 // Abgeleitete Werte — immer berechnet, nie gespeichert.
 
 import type {
-  AppState,
   ChecklistItem,
   Deadline,
   ExpenseCategory,
+  IncomeEntry,
   Receipt,
+  TaxProfile,
+  YearData,
 } from '../types';
 import { CATEGORY_LABELS, CATEGORY_COLORS } from '../types';
+import { computeCrypto, FREIGRENZE_EUR } from './crypto';
 
 export function formatEuro(value: number, withCents = false): string {
   return value.toLocaleString('de-DE', {
@@ -102,13 +105,36 @@ export function expensesByMonth(receipts: Receipt[]): MonthSum[] {
     }));
 }
 
-// Kompakter Profil-Kontext für den KI-Worker
-export function aiProfileContext(state: AppState) {
+export function totalIncome(income: IncomeEntry[]): number {
+  return Math.round(income.reduce((s, i) => s + i.amount, 0) * 100) / 100;
+}
+
+// Reicher, datengestützter Kontext für die KI — modus- und jahresbewusst.
+export function aiProfileContext(profile: TaxProfile, year: YearData) {
+  const cats = expensesByCategory(year.receipts);
+  const expenses = totalExpenses(year.receipts);
+  const income = totalIncome(year.income);
+  const crypto = computeCrypto(year.crypto);
+  const isBusiness = year.mode === 'unternehmer';
+
   return {
-    name: state.profile.name,
-    role: state.profile.role,
-    taxYear: state.profile.taxYear,
-    receiptCount: state.receipts.length,
-    totalExpenses: formatEuro(totalExpenses(state.receipts)),
+    name: profile.name,
+    role: profile.role,
+    year: year.year,
+    mode: isBusiness ? 'Unternehmer/Selbstständig' : 'Angestellter',
+    receiptCount: year.receipts.length,
+    expensesByCategory: cats.map((c) => `${c.label}: ${formatEuro(c.amount, true)} €`).join('; ') || 'keine',
+    totalExpenses: formatEuro(expenses, true),
+    income: isBusiness ? formatEuro(income, true) : null,
+    profit: isBusiness ? formatEuro(income - expenses, true) : null,
+    cryptoTaxable: formatEuro(crypto.taxableGains, true),
+    cryptoTaxFree: formatEuro(crypto.taxFreeGains, true),
+    cryptoOverFreigrenze: crypto.overFreigrenze,
+    freigrenze: FREIGRENZE_EUR,
+    potential: formatEuro(estimatedPotential(year.receipts)),
+    openDeadlines: deadlineViews(year.deadlines)
+      .filter((d) => d.status !== 'erledigt')
+      .map((d) => `${d.title} (${d.dueDate}${d.overdue ? ', überfällig' : `, in ${d.daysLeft} Tagen`})`)
+      .join('; ') || 'keine',
   };
 }

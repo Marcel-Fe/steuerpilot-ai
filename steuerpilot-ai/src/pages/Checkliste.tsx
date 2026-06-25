@@ -5,9 +5,9 @@ import { useApp } from '../state/AppContext';
 import { taxProgress } from '../lib/calculations';
 
 export function Checkliste() {
-  const { state, toggleChecklist, addChecklistItem, deleteChecklistItem } = useApp();
+  const { year, toggleChecklist, addChecklistItem, deleteChecklistItem } = useApp();
   const [title, setTitle] = useState('');
-  const progress = taxProgress(state.checklist);
+  const progress = taxProgress(year.checklist);
 
   const add = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +44,7 @@ export function Checkliste() {
       </form>
 
       <Card className="divide-y divide-line">
-        {state.checklist.map((item) => (
+        {year.checklist.map((item) => (
           <div key={item.id} className="group flex items-center gap-3 px-5 py-3.5">
             <button
               onClick={() => toggleChecklist(item.id)}
@@ -70,7 +70,7 @@ export function Checkliste() {
             </button>
           </div>
         ))}
-        {state.checklist.length === 0 && (
+        {year.checklist.length === 0 && (
           <p className="px-5 py-10 text-center text-sm text-ink-soft">Keine Aufgaben — füge deine erste hinzu.</p>
         )}
       </Card>

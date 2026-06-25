@@ -11,9 +11,9 @@ function blank(): Deadline {
 }
 
 export function Fristen() {
-  const { state, upsertDeadline, deleteDeadline } = useApp();
+  const { year, upsertDeadline, deleteDeadline } = useApp();
   const [editing, setEditing] = useState<Deadline | null>(null);
-  const deadlines = deadlineViews(state.deadlines);
+  const deadlines = deadlineViews(year.deadlines);
 
   const save = () => {
     if (editing && editing.title.trim()) {

@@ -4,9 +4,9 @@ import { useApp } from '../state/AppContext';
 import { expensesByCategory, totalExpenses, formatEuro } from '../lib/calculations';
 
 export function Ausgaben() {
-  const { state } = useApp();
-  const categories = expensesByCategory(state.receipts);
-  const total = totalExpenses(state.receipts);
+  const { year } = useApp();
+  const categories = expensesByCategory(year.receipts);
+  const total = totalExpenses(year.receipts);
 
   return (
     <div className="flex flex-col gap-5">

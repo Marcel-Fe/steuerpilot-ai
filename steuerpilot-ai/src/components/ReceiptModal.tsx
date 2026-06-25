@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { X, Upload, Sparkles, Loader2 } from 'lucide-react';
 import { useApp } from '../state/AppContext';
-import { CATEGORY_LABELS } from '../types';
+import { CATEGORY_LABELS, categoriesForMode } from '../types';
 import type { ExpenseCategory, Receipt } from '../types';
 import { extractReceipt, aiConfigured } from '../lib/aiClient';
-
-const CATEGORIES = Object.keys(CATEGORY_LABELS) as ExpenseCategory[];
 
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
@@ -37,11 +35,12 @@ function compressImage(file: File): Promise<string> {
 }
 
 export function ReceiptModal({ onClose, editing }: { onClose: () => void; editing?: Receipt }) {
-  const { addReceipt, updateReceipt } = useApp();
+  const { addReceipt, updateReceipt, year } = useApp();
+  const CATEGORIES = categoriesForMode(year.mode);
   const [date, setDate] = useState(editing?.date ?? todayIso());
   const [vendor, setVendor] = useState(editing?.vendor ?? '');
   const [amount, setAmount] = useState(editing ? String(editing.amount) : '');
-  const [category, setCategory] = useState<ExpenseCategory>(editing?.category ?? 'arbeitsmittel');
+  const [category, setCategory] = useState<ExpenseCategory>(editing?.category ?? CATEGORIES[0]);
   const [imageDataUrl, setImageDataUrl] = useState<string | undefined>(editing?.imageDataUrl);
   const [error, setError] = useState('');
   const [scanning, setScanning] = useState(false);

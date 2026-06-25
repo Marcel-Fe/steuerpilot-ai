@@ -12,17 +12,17 @@ import { CATEGORY_LABELS } from '../types';
 import type { ExpenseCategory } from '../types';
 
 export function Dokumente() {
-  const { state } = useApp();
-  const cats = expensesByCategory(state.receipts);
-  const total = totalExpenses(state.receipts);
-  const potential = estimatedPotential(state.receipts);
-  const deadlines = deadlineViews(state.deadlines);
-  const crypto = computeCrypto(state.crypto);
+  const { state, year } = useApp();
+  const cats = expensesByCategory(year.receipts);
+  const total = totalExpenses(year.receipts);
+  const potential = estimatedPotential(year.receipts);
+  const deadlines = deadlineViews(year.deadlines);
+  const crypto = computeCrypto(year.crypto);
   const today = new Date().toLocaleDateString('de-DE');
 
   // Belege je Kategorie gruppiert
   const byCat = (c: ExpenseCategory) =>
-    [...state.receipts].filter((r) => r.category === c).sort((a, b) => a.date.localeCompare(b.date));
+    [...year.receipts].filter((r) => r.category === c).sort((a, b) => a.date.localeCompare(b.date));
 
   return (
     <div className="flex flex-col gap-5">
@@ -45,7 +45,7 @@ export function Dokumente() {
         <div className="flex items-start justify-between border-b border-line pb-5">
           <div>
             <h2 className="flex items-center gap-2 text-2xl font-extrabold text-ink">
-              <FileText className="h-6 w-6 text-brand" /> Steuerübersicht {state.profile.taxYear}
+              <FileText className="h-6 w-6 text-brand" /> Steuerübersicht {year.year}
             </h2>
             <p className="mt-1 text-sm text-ink-soft">
               {state.profile.name} · {state.profile.role}
@@ -61,7 +61,7 @@ export function Dokumente() {
         {/* Zusammenfassung */}
         <Section title="1. Zusammenfassung">
           <Row label="Werbungskosten / Ausgaben gesamt" value={`${formatEuro(total, true)} €`} />
-          <Row label="Anzahl Belege" value={String(state.receipts.length)} />
+          <Row label="Anzahl Belege" value={String(year.receipts.length)} />
           <Row label="Krypto – steuerpflichtiger Saldo (laufendes Jahr)" value={`${formatEuro(crypto.taxableGains, true)} €`} />
           <Row label="Geschätztes Steuerpotenzial" value={`ca. ${formatEuro(potential)} €`} strong />
         </Section>
@@ -99,7 +99,7 @@ export function Dokumente() {
 
         {/* Krypto */}
         <Section title="3. Krypto-Werte (private Veräußerungsgeschäfte)">
-          {state.crypto.length === 0 ? (
+          {year.crypto.length === 0 ? (
             <p className="text-sm text-ink-soft">Keine Krypto-Transaktionen erfasst.</p>
           ) : (
             <>

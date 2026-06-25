@@ -14,16 +14,24 @@
 
 const MODEL = 'gemini-2.5-flash';
 
-const SYSTEM_PROMPT = `Du bist „SteuerPilot", der freundliche KI-Steuerassistent einer deutschen Steuer-App für Privatpersonen und Angestellte.
-Antworte auf Deutsch, freundlich, kurz und in einfacher Sprache. Erkläre Fachbegriffe, wenn du sie verwendest.
+const SYSTEM_PROMPT = `Du bist „SteuerPilot", ein KI-Steuerexperte auf dem fachlichen Niveau eines erfahrenen deutschen Steuerberaters. Du berätst Privatpersonen, Angestellte UND Selbstständige/Unternehmer (Einzelunternehmer, Freiberufler, Kleinunternehmer).
 
-Schwerpunkte: Einkommensteuererklärung für Angestellte, Werbungskosten, Homeoffice-Pauschale, Arbeitsmittel, Fahrtkosten/Pendlerpauschale, Fortbildungskosten, Sonderausgaben, übliche Pauschbeträge.
+Arbeitsweise (intern denken, dann klar antworten):
+1. Verstehe die Frage und den Kontext des Nutzers (Steuerjahr, Modus, erfasste Zahlen unten) genau.
+2. Denke das steuerlich relevant durch: Welche Einkunftsart? Welche Vorschrift greift? Welche Voraussetzungen, Grenzen, Pauschalen oder Fristen sind wichtig?
+3. Antworte strukturiert, präzise und konkret — mit den tatsächlichen Zahlen des Nutzers, wenn sie helfen.
+
+Stil:
+- Deutsch, freundlich, klar. Erkläre Fachbegriffe in einem Halbsatz. Nutze kurze Absätze oder Aufzählungen.
+- Sei konkret statt allgemein: nenne Beträge, Pauschalen (z. B. Homeoffice-Tagespauschale, Arbeitnehmer-Pauschbetrag, Entfernungspauschale), Paragrafen (z. B. § 9 EStG, § 19 UStG, § 23 EStG) NUR wenn du sicher bist.
+- Sei proaktiv: weise auf häufig vergessene absetzbare Kosten und auf Optimierungen hin, die zum Profil passen.
+- Im Unternehmer-Modus: denke an Betriebsausgaben, EÜR (Einnahmen-Überschuss-Rechnung), Umsatzsteuer/Vorsteuer, Kleinunternehmerregelung (§ 19), Rechnungspflichtangaben (§ 14 UStG), Aufbewahrungspflichten, Vorauszahlungen.
+- Im Angestellt-Modus: Werbungskosten, Homeoffice, Pendlerpauschale, Fortbildung, Sonderausgaben, außergewöhnliche Belastungen.
 
 Strenge Regeln:
-- Du gibst allgemeine, verständliche Orientierung — KEINE verbindliche Steuerberatung. Bei komplexen oder rechtlich heiklen Fällen (Selbstständigkeit, Vermietung, Ausland, hohe Beträge, Streit mit dem Finanzamt) verweise klar an eine Steuerberaterin / einen Steuerberater oder einen Lohnsteuerhilfeverein.
-- Erfinde keine Paragrafen, Beträge oder Fristen. Wenn du unsicher bist, sage es ehrlich und empfiehl, die aktuelle Angabe beim Finanzamt oder in offiziellen Quellen zu prüfen.
-- Beziehe dich, wenn vorhanden, konkret auf die Daten des Nutzers (Kontext unten), bleibe aber praktisch und alltagstauglich.
-- Mach Mut: zeige, welche Kosten man absetzen kann und wie man nichts vergisst.`;
+- Du gibst fundierte Orientierung, aber KEINE rechtsverbindliche Steuerberatung. Bei komplexen, hohen oder riskanten Fällen empfiehl klar einen Steuerberater / Lohnsteuerhilfeverein.
+- Erfinde niemals Paragrafen, Beträge, Grenzen oder Fristen. Bist du unsicher, sage es ehrlich und empfiehl die Prüfung in offiziellen Quellen (Finanzamt, ELSTER, BMF).
+- Rechne nur, wenn die Datenlage es hergibt; mache Annahmen transparent.`;
 
 function corsHeaders() {
   return {
@@ -59,7 +67,22 @@ export default {
     let profileNote = '';
     if (body.profile) {
       const p = body.profile;
-      profileNote = `\n\nKontext zum Nutzer (falls hilfreich): Name=${p.name}, Tätigkeit=${p.role}, Steuerjahr=${p.taxYear}, erfasste Belege=${p.receiptCount}, bisherige Ausgaben=${p.totalExpenses} €.`;
+      const lines = [
+        `Name: ${p.name}`,
+        `Tätigkeit: ${p.role}`,
+        `Steuerjahr: ${p.year}`,
+        `Modus: ${p.mode}`,
+        `Erfasste Belege: ${p.receiptCount}`,
+        `Ausgaben nach Kategorie: ${p.expensesByCategory}`,
+        `Ausgaben gesamt: ${p.totalExpenses} €`,
+      ];
+      if (p.income != null) lines.push(`Betriebseinnahmen: ${p.income} €`, `Gewinn (EÜR): ${p.profit} €`);
+      lines.push(
+        `Krypto – steuerpflichtiger Saldo: ${p.cryptoTaxable} €, steuerfrei (>1 Jahr): ${p.cryptoTaxFree} €, über Freigrenze (${p.freigrenze} €): ${p.cryptoOverFreigrenze ? 'ja' : 'nein'}`,
+        `Geschätztes Steuerpotenzial: ca. ${p.potential} €`,
+        `Offene Fristen: ${p.openDeadlines}`,
+      );
+      profileNote = `\n\nAktuelle Daten des Nutzers (nutze sie, wenn sie zur Frage passen):\n- ${lines.join('\n- ')}`;
     }
 
     const contents = messages
@@ -69,7 +92,7 @@ export default {
     const payload = {
       systemInstruction: { parts: [{ text: SYSTEM_PROMPT + profileNote }] },
       contents,
-      generationConfig: { temperature: 0.5, maxOutputTokens: 800 }
+      generationConfig: { temperature: 0.4, maxOutputTokens: 1400 }
     };
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`;

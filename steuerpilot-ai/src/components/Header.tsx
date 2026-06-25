@@ -1,4 +1,4 @@
-import { Search, ScanLine, Menu } from 'lucide-react';
+import { Search, ScanLine, Menu, Briefcase, User } from 'lucide-react';
 import { useApp } from '../state/AppContext';
 import { useUi } from '../state/UiContext';
 import { NotificationsBell } from './NotificationsBell';
@@ -11,9 +11,11 @@ function greeting(): string {
 }
 
 export function Header() {
-  const { state } = useApp();
+  const { state, year, setActiveYear } = useApp();
   const { openReceiptModal, openMenu } = useUi();
   const firstName = state.profile.name.split(' ')[0];
+  const sortedYears = [...state.years].sort((a, b) => b.year - a.year);
+  const isBusiness = year.mode === 'unternehmer';
 
   return (
     <header className="no-print flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -29,9 +31,29 @@ export function Header() {
           <h1 className="text-2xl font-bold tracking-tight text-ink">
             {greeting()}, {firstName}! <span className="align-middle">👋</span>
           </h1>
-          <p className="mt-0.5 text-sm text-ink-soft">
-            Dein Steuer-Cockpit für {state.profile.taxYear}
-          </p>
+          <div className="mt-1 flex items-center gap-2">
+            <span className="text-sm text-ink-soft">Steuer-Cockpit</span>
+            <select
+              value={year.id}
+              onChange={(e) => setActiveYear(e.target.value)}
+              className="rounded-lg border border-line bg-surface px-2 py-1 text-sm font-semibold text-brand-700 outline-none focus:border-brand"
+              aria-label="Steuerjahr wählen"
+            >
+              {sortedYears.map((y) => (
+                <option key={y.id} value={y.id}>
+                  {y.year}
+                </option>
+              ))}
+            </select>
+            <span
+              className={`flex items-center gap-1 rounded-md px-2 py-1 text-[0.7rem] font-semibold ${
+                isBusiness ? 'bg-amber-50 text-amber-700' : 'bg-brand-50 text-brand-700'
+              }`}
+            >
+              {isBusiness ? <Briefcase className="h-3 w-3" /> : <User className="h-3 w-3" />}
+              {isBusiness ? 'Unternehmer' : 'Angestellt'}
+            </span>
+          </div>
         </div>
       </div>
 

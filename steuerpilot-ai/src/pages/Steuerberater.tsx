@@ -6,14 +6,14 @@ import { expensesByCategory, totalExpenses, estimatedPotential, formatEuro } fro
 import { receiptsToCsv, downloadFile, buildAdvisorEmail, openAdvisorMail } from '../lib/exporters';
 
 export function Steuerberater() {
-  const { state, updateProfile } = useApp();
+  const { state, year, updateProfile } = useApp();
   const [email, setEmail] = useState(state.profile.advisorEmail ?? '');
   const [saved, setSaved] = useState(false);
 
-  const cats = expensesByCategory(state.receipts);
-  const total = totalExpenses(state.receipts);
-  const potential = estimatedPotential(state.receipts);
-  const preview = buildAdvisorEmail(state);
+  const cats = expensesByCategory(year.receipts);
+  const total = totalExpenses(year.receipts);
+  const potential = estimatedPotential(year.receipts);
+  const preview = buildAdvisorEmail(state.profile, year);
 
   const saveEmail = () => {
     updateProfile({ advisorEmail: email.trim() });
@@ -22,11 +22,11 @@ export function Steuerberater() {
   };
 
   const exportCsv = () =>
-    downloadFile(`belege-${state.profile.taxYear}.csv`, receiptsToCsv(state.receipts), 'text/csv;charset=utf-8');
+    downloadFile(`belege-${year.year}.csv`, receiptsToCsv(year.receipts), 'text/csv;charset=utf-8');
 
   const send = () => {
     updateProfile({ advisorEmail: email.trim() });
-    openAdvisorMail({ ...state, profile: { ...state.profile, advisorEmail: email.trim() } });
+    openAdvisorMail({ ...state.profile, advisorEmail: email.trim() }, year);
   };
 
   return (
@@ -50,7 +50,7 @@ export function Steuerberater() {
       </Card>
 
       <Card className="p-6">
-        <h2 className="text-base font-bold text-ink">Zusammenfassung {state.profile.taxYear}</h2>
+        <h2 className="text-base font-bold text-ink">Zusammenfassung {year.year}</h2>
         <ul className="mt-3 space-y-1.5 text-[0.88rem]">
           {cats.map((c) => (
             <li key={c.category} className="flex justify-between">
@@ -59,7 +59,7 @@ export function Steuerberater() {
             </li>
           ))}
           <li className="flex justify-between border-t border-line pt-1.5">
-            <span className="font-semibold text-ink">Gesamt ({state.receipts.length} Belege)</span>
+            <span className="font-semibold text-ink">Gesamt ({year.receipts.length} Belege)</span>
             <span className="font-bold text-ink">{formatEuro(total, true)} €</span>
           </li>
           <li className="flex justify-between">

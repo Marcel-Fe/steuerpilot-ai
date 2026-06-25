@@ -1,6 +1,6 @@
 // CSV- und E-Mail-Export (für Steuerberater-Versand).
 
-import type { AppState, Receipt } from '../types';
+import type { Receipt, TaxProfile, YearData } from '../types';
 import { CATEGORY_LABELS } from '../types';
 import { expensesByCategory, totalExpenses, estimatedPotential, formatEuro } from './calculations';
 
@@ -31,8 +31,8 @@ export function downloadFile(filename: string, content: string, mime: string) {
 
 // Kompakte Zusammenfassung als E-Mail-Text (mailto hat Längenlimits → nur Übersicht,
 // Details liegen in der CSV).
-export function buildAdvisorEmail(state: AppState): { subject: string; body: string } {
-  const { profile, receipts } = state;
+export function buildAdvisorEmail(profile: TaxProfile, year: YearData): { subject: string; body: string } {
+  const receipts = year.receipts;
   const cats = expensesByCategory(receipts);
   const total = totalExpenses(receipts);
   const potential = estimatedPotential(receipts);
@@ -40,7 +40,7 @@ export function buildAdvisorEmail(state: AppState): { subject: string; body: str
   const lines = [
     `Hallo,`,
     ``,
-    `anbei meine Steuerunterlagen für ${profile.taxYear} (${profile.name}, ${profile.role}).`,
+    `anbei meine Steuerunterlagen für ${year.year} (${profile.name}, ${profile.role}).`,
     ``,
     `Übersicht der Werbungskosten/Ausgaben:`,
     ...cats.map((c) => `- ${c.label}: ${formatEuro(c.amount, true)} €`),
@@ -54,14 +54,14 @@ export function buildAdvisorEmail(state: AppState): { subject: string; body: str
     profile.name,
   ];
   return {
-    subject: `Steuerunterlagen ${profile.taxYear} – ${profile.name}`,
+    subject: `Steuerunterlagen ${year.year} – ${profile.name}`,
     body: lines.join('\n'),
   };
 }
 
-export function openAdvisorMail(state: AppState) {
-  const { subject, body } = buildAdvisorEmail(state);
-  const to = state.profile.advisorEmail ?? '';
+export function openAdvisorMail(profile: TaxProfile, year: YearData) {
+  const { subject, body } = buildAdvisorEmail(profile, year);
+  const to = profile.advisorEmail ?? '';
   const href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   window.location.href = href;
 }
