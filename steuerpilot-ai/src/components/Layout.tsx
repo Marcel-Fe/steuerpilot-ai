@@ -24,7 +24,7 @@ export function Layout() {
             <Outlet />
           </main>
 
-          <footer className="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 border-t border-line pt-5 text-[0.78rem] text-ink-soft">
+          <footer className="no-print mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 border-t border-line pt-5 text-[0.78rem] text-ink-soft">
             <span className="flex items-center gap-1.5">
               <ShieldCheck className="h-4 w-4 text-success" /> Sicher & DSGVO-konform
             </span>

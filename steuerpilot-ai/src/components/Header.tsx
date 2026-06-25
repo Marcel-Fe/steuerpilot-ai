@@ -16,7 +16,7 @@ export function Header() {
   const firstName = state.profile.name.split(' ')[0];
 
   return (
-    <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <header className="no-print flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-3">
         <button
           onClick={openMenu}

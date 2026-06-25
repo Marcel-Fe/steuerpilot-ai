@@ -1,9 +1,17 @@
-import { useRef, useState } from 'react';
-import { Bot, Send, ChevronRight } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Bot, Send, ChevronRight, Mic, Volume2, VolumeX } from 'lucide-react';
 import { Card } from './Card';
 import { useApp } from '../state/AppContext';
 import { askAi, aiConfigured } from '../lib/aiClient';
 import { aiProfileContext } from '../lib/calculations';
+import {
+  recognitionSupported,
+  synthSupported,
+  createRecognizer,
+  speak,
+  cancelSpeak,
+  type Recognizer,
+} from '../lib/speech';
 import type { ChatMessage } from '../types';
 
 const SUGGESTIONS = [
@@ -17,7 +25,14 @@ export function AiAssistantCard() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [voiceOut, setVoiceOut] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const recognizerRef = useRef<Recognizer | null>(null);
+  const voiceOutRef = useRef(false);
+  voiceOutRef.current = voiceOut;
+
+  useEffect(() => () => cancelSpeak(), []);
 
   const send = async (text: string) => {
     const content = text.trim();
@@ -30,17 +45,56 @@ export function AiAssistantCard() {
     const reply = await askAi(next, aiProfileContext(state));
     setMessages([...next, { role: 'assistant', content: reply }]);
     setLoading(false);
+    if (voiceOutRef.current) speak(reply);
     requestAnimationFrame(() => {
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
     });
   };
 
+  const toggleMic = () => {
+    if (listening) {
+      recognizerRef.current?.stop();
+      setListening(false);
+      return;
+    }
+    const rec = createRecognizer(
+      (text) => {
+        setListening(false);
+        send(text);
+      },
+      () => setListening(false),
+    );
+    if (!rec) return;
+    recognizerRef.current = rec;
+    setListening(true);
+    rec.start();
+  };
+
+  const toggleVoice = () => {
+    if (voiceOut) cancelSpeak();
+    setVoiceOut((v) => !v);
+  };
+
   const hasChat = messages.length > 0;
+  const micOn = recognitionSupported();
+  const ttsOn = synthSupported();
 
   return (
     <Card className="flex flex-col p-5">
       <div className="flex items-center justify-between">
         <h2 className="text-base font-bold text-ink">KI Steuerassistent</h2>
+        {ttsOn && (
+          <button
+            onClick={toggleVoice}
+            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[0.72rem] font-semibold ${
+              voiceOut ? 'bg-brand-50 text-brand-700' : 'text-ink-soft hover:bg-brand-50/60'
+            }`}
+            title="Antworten vorlesen"
+          >
+            {voiceOut ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+            Vorlesen {voiceOut ? 'an' : 'aus'}
+          </button>
+        )}
       </div>
 
       <div className="mt-4 flex items-start gap-3">
@@ -50,29 +104,22 @@ export function AiAssistantCard() {
         <div>
           <p className="flex items-center gap-2 font-semibold text-ink">
             SteuerPilot
-            <span className="rounded-md bg-brand-50 px-1.5 py-0.5 text-[0.6rem] font-bold text-brand-700">
-              AI
-            </span>
+            <span className="rounded-md bg-brand-50 px-1.5 py-0.5 text-[0.6rem] font-bold text-brand-700">AI</span>
           </p>
           <p className="mt-1 text-[0.86rem] leading-snug text-ink-soft">
-            Frag mich alles rund um deine Steuer. Ich helfe dir, nichts zu
+            Frag mich alles rund um deine Steuer — per Text oder Mikrofon. Ich helfe dir, nichts zu
             vergessen und das Beste herauszuholen.
           </p>
         </div>
       </div>
 
       {hasChat && (
-        <div
-          ref={scrollRef}
-          className="mt-4 flex max-h-64 flex-col gap-3 overflow-y-auto pr-1"
-        >
+        <div ref={scrollRef} className="mt-4 flex max-h-64 flex-col gap-3 overflow-y-auto pr-1">
           {messages.map((m, i) => (
             <div
               key={i}
               className={`max-w-[88%] rounded-2xl px-3.5 py-2.5 text-[0.86rem] leading-snug ${
-                m.role === 'user'
-                  ? 'self-end bg-brand text-white'
-                  : 'self-start bg-bg text-ink'
+                m.role === 'user' ? 'self-end bg-brand text-white' : 'self-start bg-bg text-ink'
               }`}
             >
               {m.content}
@@ -106,12 +153,25 @@ export function AiAssistantCard() {
           e.preventDefault();
           send(input);
         }}
-        className="mt-4 flex items-center gap-2 rounded-xl border border-line bg-bg/40 px-3 py-1.5"
+        className="mt-4 flex items-center gap-2 rounded-xl border border-line bg-bg/40 px-2 py-1.5"
       >
+        {micOn && (
+          <button
+            type="button"
+            onClick={toggleMic}
+            className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg transition-colors ${
+              listening ? 'animate-pulse bg-danger text-white' : 'text-ink-soft hover:bg-brand-50 hover:text-brand'
+            }`}
+            aria-label="Per Mikrofon sprechen"
+            title="Per Mikrofon sprechen"
+          >
+            <Mic className="h-4 w-4" />
+          </button>
+        )}
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Stelle eine Frage…"
+          placeholder={listening ? 'Ich höre zu…' : 'Stelle eine Frage…'}
           className="flex-1 bg-transparent py-2 text-sm outline-none"
         />
         <button
@@ -125,9 +185,7 @@ export function AiAssistantCard() {
       </form>
 
       {!aiConfigured() && (
-        <p className="mt-2 text-[0.72rem] text-ink-soft">
-          Hinweis: KI-Worker noch nicht verbunden — siehe CONCEPT.md.
-        </p>
+        <p className="mt-2 text-[0.72rem] text-ink-soft">Hinweis: KI-Worker noch nicht verbunden — siehe CONCEPT.md.</p>
       )}
     </Card>
   );

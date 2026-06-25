@@ -11,8 +11,8 @@ import { Fristen } from './pages/Fristen';
 import { Analyse } from './pages/Analyse';
 import { Krypto } from './pages/Krypto';
 import { Steuerberater } from './pages/Steuerberater';
+import { Dokumente } from './pages/Dokumente';
 import { Einstellungen } from './pages/Einstellungen';
-import { ComingSoon } from './pages/ComingSoon';
 
 export default function App() {
   return (
@@ -29,7 +29,7 @@ export default function App() {
             <Route path="analyse" element={<Analyse />} />
             <Route path="krypto" element={<Krypto />} />
             <Route path="fristen" element={<Fristen />} />
-            <Route path="dokumente" element={<ComingSoon title="Dokumente" />} />
+            <Route path="dokumente" element={<Dokumente />} />
             <Route path="steuerberater" element={<Steuerberater />} />
             <Route path="einstellungen" element={<Einstellungen />} />
             <Route path="*" element={<Dashboard />} />

@@ -42,6 +42,19 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Druckansicht: nur das Dokument, ohne Navigation */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+  .print-area {
+    box-shadow: none !important;
+  }
+}
+
 /* schmale, dezente Scrollbar im Premium-Look */
 ::-webkit-scrollbar {
   width: 10px;

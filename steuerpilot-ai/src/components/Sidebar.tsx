@@ -107,7 +107,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 // Feste Sidebar auf Desktop
 export function Sidebar() {
   return (
-    <aside className="hidden w-[248px] shrink-0 px-5 py-6 lg:block">
+    <aside className="no-print hidden w-[248px] shrink-0 px-5 py-6 lg:block">
       <SidebarContent />
     </aside>
   );
